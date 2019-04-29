@@ -1,13 +1,18 @@
+apply plugin: 'java'
+
 group = 'qupath'
 version = '0.0.1'
 description = 'qupath-extension-gdal'
 
 repositories {
+    mavenLocal()
     mavenCentral()
+    flatDir {dirs project.findProperty('qpdir') ?: 'qupath/app'}
 }
 
 dependencies {
-    compile project(':qupath-core')
-    compile project(':qupath-core-awt')
+    implementation 'qupath:qupath-core:0.1.2'
+    implementation 'qupath:qupath-core-awt:0.1.2'
     implementation 'org.gdal:gdal:2.3.2'
+    implementation 'org.slf4j:slf4j-api:1.7.25'
 }
