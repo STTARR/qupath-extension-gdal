@@ -46,7 +46,7 @@ public class GDALImageServer extends AbstractImageServer<BufferedImage> {
     static final double MAX_DOWNSAMPLE_FACTOR = 150.0;
     // Set this to empty to allow all drivers, but only JP2OpenJPEG has been tested.
     // This option should be exposed so that the user can set driver priorities (like with BioFormats)
-    static final String[] GDAL_ALLOWED_DRIVERS = {"JP2ECW", "JP2OpenJPEG"};
+    static final String[] GDAL_ALLOWED_DRIVERS = {}; //e.g. {"JP2ECW", "JP2OpenJPEG"};
 
     // Each thread that tries to access tiles needs its own Dataset handle since GDAL is not thread-safe
     private ConcurrentHashMap<String,Dataset> ds_map = new ConcurrentHashMap<>();
