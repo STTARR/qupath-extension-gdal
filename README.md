@@ -10,21 +10,22 @@
 
 - [QuPath v0.1.2](https://github.com/qupath/qupath/releases/tag/v0.1.2)
 - GDAL with Java bindings and a JPEG2000 driver (most builds should come with JP2OpenJPEG by default). GDAL does not offer binary releases, but a [variety of other maintainers](https://trac.osgeo.org/gdal/wiki/DownloadingGdalBinaries) do. Here are some suggestions for where to look to obtain these:
-    - **Windows**: [GISInternals](http://www.gisinternals.com/index.html). I have not had success with the GDAL 2.4.0 build, but [2.3.3](http://www.gisinternals.com/query.html?content=filelist&file=release-1911-x64-gdal-2-4-0-mapserver-7-2-1.zip) has worked. **Note**: The GISInternals build of GDAL depends on `iconv.dll` which is also needed by OpenSlide but the versions they are shipped with are not compatible. Due to the way Windows handles .dll loading, integrating GDAL into QuPath will break OpenSlide support. You can overcome this by building GDAL from source (or just have a separate copy of QuPath for loading JP2 files specifically).
+    - **Windows**: [GISInternals](http://www.gisinternals.com/index.html) (since OSGeo4W does not ship with Java bindings). **Important**: The GISInternals build of GDAL depends on `iconv.dll` which is also needed by OpenSlide but the versions they are shipped with are not compatible. Due to the way Windows handles .dll loading, integrating GDAL into QuPath will break OpenSlide support. You can overcome this by building GDAL from source to a single .dll file (or just create a separate copy of QuPath for loading JP2 files specifically).
     - **Mac**: [KyngChaos](http://www.kyngchaos.com/software/frameworks/) (unconfirmed)
     - **Linux**: Your package manager, most likely. On Ubuntu, the relevant packages are `gdal-bin`, `libgdal20` and `libgdal-java`.
     - Alternatively, build GDAL from source: https://trac.osgeo.org/gdal/wiki/BuildHints.
+As long as the GDAL Java methods required in this extension have not changed in between versions, the version of GDAL should not matter (although there may be some performance differences depending on the optimization of the individual drivers). This extension is compiled against the GDAL 2.4.0 Java binding but also works fine on 2.2.3 (the latest version available on Ubuntu 18.04LTS).
 
 You can check that your copy of GDAL includes a JP2 driver using the bundled gdalinfo executable and running `gdalinfo --formats`.
 
 ## Installation
 
-These instructions will mainly refer to the Windows GDAL build from GISInternals (so any library extensions will be .dll and not .so), but should be fairly similar on different operating systems.
+These instructions will mainly refer to the Windows GDAL build from GISInternals (so any library extensions will be `.dll` and not `.so`), but should be fairly similar on different operating systems.
 
-1. Copy `gdalxxx.dll` (where `xxx` is the version number) and any `.dll` dependencies (in most cases this should be all `.dll` files that exist in the same folder) from your GDAL release to the QuPath `app` folder. 
-2. Also copy `gdalalljni.dll`, which is part of the Java binding and should be located in the release.
-3. Install this extension [as usual](https://github.com/qupath/qupath/wiki/Extensions).
-4. Confirm installation by restarting QuPath and ensure GDAL Builder is listed under *Help* -> *Show Installed Extensions*.
+1. Copy `gdalxxx.dll` (where `xxx` is the version number) and any additional `.dll` dependencies (in most cases this should be all `.dll` files that exist in the same folder) from your GDAL release to the QuPath `QuPath/app` folder. 
+2. Also copy `gdalalljni.dll` to the same folder, which is part of the GDAL Java binding.
+4. Install this extension [as usual](https://github.com/qupath/qupath/wiki/Extensions) as well as `gdal.jar`.
+5. Confirm installation by executing `QuPath.exe` and ensure GDAL Builder is listed under *Help* -> *Installed extensions*. If you open a JP2 image and go to the image tab, the Server type property should say GDAL.
 
 **Important**: If the QuPath Bio-Formats extension is installed, make sure to disable .jp2 files, otherwise BioFormats may take precedence.
 
