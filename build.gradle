@@ -1,11 +1,21 @@
 apply plugin: 'java'
 
 group = 'qupath'
-version = '0.1.2'
+version = '0.1.2.' + new Date().format('yyyyMMdd')
 description = 'qupath-extension-gdal'
 
 sourceCompatibility = JavaVersion.VERSION_1_8
 targetCompatibility = JavaVersion.VERSION_1_8
+
+jar {
+    manifest {
+        attributes(
+            "Implementation-Vendor": 'STTARR',
+            "Implementation-Title": project.description,
+            "Implementation-Version": project.version, // Will be displayed in QuPath.
+        )
+    }
+}
 
 repositories {
     mavenLocal()
