@@ -46,7 +46,7 @@ public class GDALImageServer extends AbstractImageServer<BufferedImage> {
     static final double MAX_DOWNSAMPLE_FACTOR = 150.0;
     // Set this to empty to allow all drivers, but only JP2OpenJPEG has been tested.
     // This option should be exposed so that the user can set driver priorities (like with BioFormats)
-    static final String[] GDAL_ALLOWED_DRIVERS = {}; //e.g. {"JP2ECW", "JP2OpenJPEG"};
+    static String[] gdal_allowed_drivers = {}; //e.g. {"JP2ECW", "JP2OpenJPEG"};
 
     // Each thread that tries to access tiles needs its own Dataset handle since GDAL is not thread-safe
     private ConcurrentHashMap<String,Dataset> ds_map = new ConcurrentHashMap<>();
@@ -59,9 +59,13 @@ public class GDALImageServer extends AbstractImageServer<BufferedImage> {
         gdal.SetCacheMax(Integer.MAX_VALUE);  // Set cache to maximum (~2 GB)
         //gdal.UseExceptions();  // This doesn't work? (bug?)
 
+        GDALOptionsExtension opts = GDALOptionsExtension.getInstance();
+        if (opts.getDriver() != null && !opts.getDriver().isEmpty()) {
+            gdal_allowed_drivers = new String[] {opts.getDriver()};
+        }
         ds_path = path;
         Dataset ds = gdal.OpenEx(path, gdalconstConstants.GA_ReadOnly,
-                new Vector<>(Arrays.asList(GDAL_ALLOWED_DRIVERS)));
+                new Vector<>(Arrays.asList(gdal_allowed_drivers)));
         // Check if that succeeded (since GDAL won't raise native exceptions)
         if (ds == null)
             throw new IOException("GDAL could not open instantiate a Dataset.");
@@ -194,7 +198,7 @@ public class GDALImageServer extends AbstractImageServer<BufferedImage> {
             ds_map.put(
                     Thread.currentThread().getName(),
                     gdal.OpenEx(ds_path, gdalconstConstants.GA_ReadOnly,
-                            new Vector<>(Arrays.asList(GDAL_ALLOWED_DRIVERS)))
+                            new Vector<>(Arrays.asList(gdal_allowed_drivers)))
             );
         }
         return ds_map.get(Thread.currentThread().getName());

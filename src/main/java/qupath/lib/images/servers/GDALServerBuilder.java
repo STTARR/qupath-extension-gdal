@@ -6,6 +6,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import qupath.lib.images.servers.FileFormatInfo.ImageCheckType;
+import qupath.lib.gui.QuPathGUI;
+import qupath.lib.gui.extensions.QuPathExtension;
 
 public class GDALServerBuilder implements ImageServerBuilder<BufferedImage> {
 
@@ -25,6 +27,9 @@ public class GDALServerBuilder implements ImageServerBuilder<BufferedImage> {
 
     @Override
     public float supportLevel(String path, ImageCheckType type, Class<?> cls) {
+        GDALOptionsExtension opts = GDALOptionsExtension.getInstance();
+        if (!opts.isEnabled())
+            return 0;
         if (cls != BufferedImage.class)
             return 0;
         switch (type) {
@@ -56,6 +61,16 @@ public class GDALServerBuilder implements ImageServerBuilder<BufferedImage> {
     @Override
     public String getDescription() {
         return "Image server for JP2 whole slide images using the GDAL library.";
+    }
+
+    public static String getGDALVersion() {
+        try {
+            Class<?> cls = Class.forName("org.gdal.gdal.gdal");
+            return (String)cls.getMethod("VersionInfo", String.class).invoke(null, "--version");
+        } catch (Exception e) {
+            logger.error("Could not load GDAL native library", e);
+        }
+        return null;
     }
 
 }
