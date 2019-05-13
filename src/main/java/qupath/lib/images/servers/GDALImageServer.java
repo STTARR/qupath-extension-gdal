@@ -41,12 +41,13 @@ public class GDALImageServer extends AbstractImageServer<BufferedImage> {
     private ImageServerMetadata userMetadata;
     private double[] downsamples;
     private String ds_path;
+    private String ds_plugin = "";
+    // Set this to empty to allow all drivers
+    // This option should be exposed so that the user can set driver priorities
+    private String[] gdal_allowed_drivers; //e.g. {"JP2OpenJPEG"};
 
     // Parameters
     static final double MAX_DOWNSAMPLE_FACTOR = 150.0;
-    // Set this to empty to allow all drivers, but only JP2OpenJPEG has been tested.
-    // This option should be exposed so that the user can set driver priorities (like with BioFormats)
-    static String[] gdal_allowed_drivers = {}; //e.g. {"JP2ECW", "JP2OpenJPEG"};
 
     // Each thread that tries to access tiles needs its own Dataset handle since GDAL is not thread-safe
     private ConcurrentHashMap<String,Dataset> ds_map = new ConcurrentHashMap<>();
@@ -60,16 +61,15 @@ public class GDALImageServer extends AbstractImageServer<BufferedImage> {
         //gdal.UseExceptions();  // This doesn't work? (bug?)
 
         GDALOptionsExtension opts = GDALOptionsExtension.getInstance();
-        if (opts.getDriver() != null && !opts.getDriver().isEmpty()) {
-            gdal_allowed_drivers = new String[] {opts.getDriver()};
-        }
+        gdal_allowed_drivers = opts.getAllowedDrivers();
         ds_path = path;
         Dataset ds = gdal.OpenEx(path, gdalconstConstants.GA_ReadOnly,
                 new Vector<>(Arrays.asList(gdal_allowed_drivers)));
-        // Check if that succeeded (since GDAL won't raise native exceptions)
+        // Check if that succeeded (since GDAL won't raise native exceptions) 
         if (ds == null)
-            throw new IOException("GDAL could not open instantiate a Dataset.");
-        logger.info("Using GDAL Driver: {}", ds.GetDriver().GetDescription());
+            throw new IOException("GDAL could not instantiate a Dataset.");
+        ds_plugin = ds.GetDriver().GetDescription();
+        logger.info("Using GDAL Driver: {}", ds_plugin);
 
         Band band = ds.GetRasterBand(1);
         // Get metadata
@@ -134,7 +134,7 @@ public class GDALImageServer extends AbstractImageServer<BufferedImage> {
 
     @Override
     public String getServerType() {
-        return "GDAL";
+        return "GDAL (" + ds_plugin + ")";
     }
 
     @Override
